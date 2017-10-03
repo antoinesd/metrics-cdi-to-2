@@ -8,8 +8,10 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessProducer;
-import javax.enterprise.util.AnnotationLiteral;
+import javax.enterprise.inject.spi.Producer;
+import javax.enterprise.util.Nonbinding;
 
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.annotation.Metric;
 import com.codahale.metrics.annotation.Timed;
 
@@ -24,21 +26,28 @@ public class MetricsExtension implements Extension {
 
     void addTimedBinding(@Observes BeforeBeanDiscovery bdd, BeanManager bm) throws Exception {
 
-        bdd.addInterceptorBinding(new AnnotatedTypeWithAllMethodNonBinding<Timed>(bm.createAnnotatedType(Timed.class)));
+        bdd.configureInterceptorBinding(Timed.class).methods().forEach(m -> m.add(Nonbinding.Literal.INSTANCE));
     }
 
     <T extends com.codahale.metrics.Metric> void decorateMetricProducer(@Observes ProcessProducer<?, T> pp, BeanManager bm) {
         if (pp.getAnnotatedMember().isAnnotationPresent(Metric.class)) {
             String name = pp.getAnnotatedMember().getAnnotation(Metric.class).name();
-            pp.setProducer(new MetricProducer(pp.getProducer(), name, bm));
+            Producer<T> producer = pp.getProducer();
+
+            pp.configureProducer().produceWith(ctx -> {
+                MetricRegistry reg = bm.createInstance().select(MetricRegistry.class).get();
+                if (!reg.getMetrics().containsKey(name)) {
+                    reg.register(name, producer.produce(ctx));
+                }
+                return (T) reg.getMetrics().get(name);
+            });
         }
     }
 
     void registerProducedMetrics(@Observes AfterDeploymentValidation adv, BeanManager bm) {
-        bm.getBeans(com.codahale.metrics.Metric.class, new AnnotationLiteral<Any>() {
-        })
-                .forEach(bean -> bm.getReference(bean, com.codahale.metrics.Metric.class, bm.createCreationalContext(bean)));
 
+        bm.createInstance().select(com.codahale.metrics.Metric.class, Any.Literal.INSTANCE).stream().forEach(metric -> {
+        });
     }
 
 }

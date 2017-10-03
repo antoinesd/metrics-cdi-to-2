@@ -1,22 +1,16 @@
 package org.cdi.further.metrics;
 
-import java.io.FileNotFoundException;
-
-import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.annotation.Metric;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.testng.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
@@ -24,23 +18,23 @@ import org.testng.annotations.Test;
  * @author Antoine Sabot-Durand
  */
 
-public class MetricsIntegrationTest extends Arquillian{
+public class MetricsIntegrationTest {
 
-    @Deployment
-    public static Archive<?> createTestArchive() throws FileNotFoundException {
+    public static SeContainer container;
 
-        WebArchive ret = ShrinkWrap
-                .create(WebArchive.class, "test.war")
-                .addPackage("org.cdi.further.metrics")
-                .addAsLibraries(Maven.resolver()
-                                        .loadPomFromFile("pom.xml")
-                                        .resolve("io.dropwizard.metrics:metrics-core",
-                                                 "io.dropwizard.metrics:metrics-annotation")
-                                        .withTransitivity().as(JavaArchive.class))
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsServiceProvider(Extension.class, MetricsExtension.class);
+    @BeforeClass
+    public void setup() {
+        container = SeContainerInitializer.newInstance()
+                .addPackages(MetricsIntegrationTest.class, MetricsExtension.class)
+                .addExtensions(MetricsExtension.class)
+                .initialize();
+        BeanManager bm = container.getBeanManager();
 
-        return ret;
+        InjectionTarget it = bm.createInjectionTarget(bm.createAnnotatedType(MetricsIntegrationTest.class));
+
+        it.inject(this, bm.createCreationalContext(null));
+
+
     }
 
     @Test

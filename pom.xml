@@ -15,7 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <cdi.version>1.2</cdi.version>
+    <cdi.version>2.0</cdi.version>
 
     <javax.inject.version>1</javax.inject.version>
 
@@ -23,7 +23,7 @@
     <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
     <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
 
-    <weld.version>2.4.5.Final</weld.version>
+    <weld.version>3.0.1.Final</weld.version>
     <slf4j-simple.version>1.6.4</slf4j-simple.version>
 
 
@@ -62,8 +62,8 @@
 
 
       <dependency>
-        <groupId>org.jboss.weld</groupId>
-        <artifactId>weld-core-impl</artifactId>
+        <groupId>org.jboss.weld.se</groupId>
+        <artifactId>weld-se-shaded</artifactId>
         <scope>test</scope>
         <version>${weld.version}</version>
       </dependency>
@@ -264,8 +264,8 @@
           <artifactId>arquillian-weld-embedded</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.weld</groupId>
-          <artifactId>weld-core-impl</artifactId>
+          <groupId>org.jboss.weld.se</groupId>
+          <artifactId>weld-se-shaded</artifactId>
         </dependency>
         <dependency>
           <groupId>ch.qos.logback</groupId>

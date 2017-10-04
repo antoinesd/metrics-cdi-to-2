@@ -24,7 +24,7 @@ public class MetricsExtension implements Extension {
         bdd.addQualifier(Metric.class);
     }
 
-    void addTimedBinding(@Observes BeforeBeanDiscovery bdd, BeanManager bm) throws Exception {
+    void addTimedBinding(@Observes BeforeBeanDiscovery bdd, BeanManager bm) {
 
         bdd.configureInterceptorBinding(Timed.class).methods().forEach(m -> m.add(Nonbinding.Literal.INSTANCE));
     }

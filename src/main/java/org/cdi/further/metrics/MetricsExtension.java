@@ -22,7 +22,7 @@ public class MetricsExtension implements Extension {
         bdd.addQualifier(Metric.class);
     }
 
-    void addTimedBinding(@Observes BeforeBeanDiscovery bdd, BeanManager bm) throws Exception {
+    void addTimedBinding(@Observes BeforeBeanDiscovery bdd, BeanManager bm) {
 
         bdd.addInterceptorBinding(new AnnotatedTypeWithAllMethodNonBinding<Timed>(bm.createAnnotatedType(Timed.class)));
     }
